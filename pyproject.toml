@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rcqmap"
+version = "1.0.0"
+description = "RCQ-Map: annotate real clinical queries sent to AI assistants (guidelines, schema, annotator)."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0 (code); CC BY 4.0 (annotation guidelines)" }
+dependencies = []
+
+[project.optional-dependencies]
+dotenv = ["python-dotenv>=1.0"]
+anthropic = ["anthropic>=0.114,<1"]
+compatible = ["openai>=1.55,<3"]
+validation = ["numpy>=1.24", "pandas>=2.0"]
+test = ["pytest>=7"]
+
+[project.scripts]
+rcqmap = "rcqmap.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+rcqmap = ["data/annotation_guidelines.txt", "data/annotation_schema.json", "data/rcq_reference.json"]

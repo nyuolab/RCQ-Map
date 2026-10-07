@@ -1,0 +1,208 @@
+Clinician Query Annotation Codebook (v2.1)
+You annotate free-text queries that clinicians at our hospital sent to an AI assistant. This is the canonical study codebook for human raters and the semantic source for model annotation; apply it exactly as written.
+Each item gives you one input:
+Question:  <the verbatim query text>
+
+Return a single JSON object with exactly the 24 fields defined below — no extra keys, no comments, no surrounding prose. Copy allowed values character-for-character. Binary fields take the integers 0 or 1 (not true/false, not "1"). Human raters: record the same 24 fields with the same allowed values, one value per field.
+General rules
+One best value per field. Every field is forced-choice. Apply the field's decision rules; if still genuinely torn, choose the value supported by the most literal reading of the query.
+Judge each field independently. No field constrains another except where a consistency rule below says so. A query can be highly answerable yet still safest to route through Retrieval; it can name a drug without being a drug-information task; it can state a dose without being high risk.
+Use only the query text. Do not assume facts that are not stated, and do not speculate about the submitter's competence or hidden intentions. Where a rule requires a cue to appear in the text, absence of the cue means the negative value even if the cue is probable.
+Surface flags are literal. Fields 15–21 (mentions_medication through requests_text_generation) describe properties of the query text itself and are judged independently of every judgement field above them.
+Reading fragments. Read a bare noun-phrase query with no verb or question word as an implicit "what is / tell me about X" and code the knowledge task that reading implies ("acute interstitial nephritis" → Foundational knowledge, Definition/concept). Code Test & result interpretation only when the text is presented as a particular patient's finding: pasted report language, a value with units, or surrounding case context. Do not impute a drafting request from topic words alone: a fragment that names a document type without an imperative ("pediatric asthma action plan") is coded by its underlying clinical task, not Documentation & workflow.
+Truncated or ask-less queries. If the query is cut off or contains no recoverable request (for example, a pasted HPI or A&P with no question), code task_category = Other, question_intent = Other, answerability = Low, and route = Clarification. Do not guess what the elided ask would have been.
+Consistency rules (hard):
+needs_context = 1 if and only if at least one of ctx_patient, ctx_institutional, ctx_evidence = 1.
+ctx_evidence = 1 implies evidence_dependent = 1 (the reverse is not required).
+patient_specific = 1 does not imply ctx_patient = 1: a fully described case may need no further patient information.
+medicine_division = Not applicable if and only if clinical_domain is anything other than Medicine.
+
+1. task_category — the primary task requested
+The single task that, if performed, satisfies the request. Classify by the deliverable the clinician wants, not by the subject matter mentioned along the way.
+Drug information & pharmacotherapy — the question is about a medication itself: dosing and adjustment, interactions, adverse effects, contraindications, kinetics, formulation, administration, drug-level monitoring, or choosing between agents on drug properties.
+Treatment & management — what to do for a condition or situation beyond drug properties: overall strategy, whether/when to treat, escalation or de-escalation, disease monitoring, thresholds for intervening, referral, disposition, non-drug therapy.
+Foundational knowledge — textbook knowledge with no live management task: pathophysiology, epidemiology, classification, anatomy, normal physiology.
+Patient education & communication — the content or approach of communicating with patients/families when no written artifact is requested: lay explanations, counselling points, how to deliver news, what to teach.
+Test & result interpretation — what a supplied finding, value, or report means.
+Documentation & workflow — drafting or reworking any written artifact (notes, summaries, letters, discharge instructions, portal replies, translations), plus EHR/system/process how-to.
+Diagnosis & differential — identifying what the patient has: differentials, most likely diagnosis, applying diagnostic criteria to a presentation, choosing the next diagnostic test.
+Coding & administrative — billing/diagnosis codes, level of service, prior authorisation, compliance and other administrative rules.
+Procedural guidance — how to perform a clinical/bedside procedure or technique.
+Other — none of the above applies: small talk or capability testing ("what can you do?"), IT problems beyond EHR documentation workflow, research and academic writing (abstracts, manuscripts, grants, statistics help), general knowledge outside medicine, and personal (non-patient-care) requests. Use sparingly.
+Boundary rules:
+Artifact vs formatted answer. Documentation & workflow covers artifacts destined for the record, a patient, or another person: notes, letters, discharge instructions, portal replies, dot phrases, tip sheets, translations. A request to write out an answer for the asker's own use — stepwise instructions for doing something, a mnemonic, a list, a table — is a format, not a document: code the underlying task ("Please write stepwise instructions to place a dialysis catheter" → Procedural guidance; "Write a mnemonic for hospital admission orders" → Foundational knowledge). requests_text_generation is judged separately on phrasing and is 1 for all of these.
+Drafting beats topic (for true artifacts). "Write discharge instructions for..." → Documentation & workflow even though the content is educational. Patient education & communication requires an explicit patient or family audience with no drafted artifact ("can you explain this to my patient?"); a plain-language request without a stated patient audience ("...in plain language, please") → the underlying knowledge task.
+Documentation & workflow covers clinical and operational artifacts only. Academic and research artifacts (manuscripts, abstracts, grants, posters) → Other.
+Drug vs Treatment hinge test. Drug-regimen questions — agent choice, dose, duration, or route for a condition, or whether two drugs can be used together — are Drug information & pharmacotherapy even when phrased as treating the condition ("What is the treatment for a Klebsiella UTI?", "How many days of antibiotics for strep pharyngitis?"). Management involving non-drug decisions, whether to treat, disposition, or care setting ("inpatient versus outpatient management of pyelonephritis") → Treatment & management. A named substance must be a medication: hormones, metabolites, and lab analytes (troponin, TSH) are not drugs; questions about them are Foundational knowledge or Test & result interpretation. An adverse or electrolyte effect of a named drug ("tendon rupture with ciprofloxacin") is Drug information & pharmacotherapy, while general pharmacology concepts naming no specific medication ("what is first-pass metabolism") are Foundational knowledge.
+Identify vs manage. Establishing the diagnosis, including choosing tests ("What labs show dehydration?") → Diagnosis & differential. Managing a stated or already-known condition → Treatment & management.
+Test knowledge, three ways. A supplied result or report → Test & result interpretation. Which test or lab to use for a situation → Diagnosis & differential. What a test measures, or its expected behaviour in a condition, with no result supplied ("What does creatine kinase tell the doctor?", "How high is CPK in NMS?") → Foundational knowledge — likewise signs, symptoms, or features of a condition.
+"Medical decision making (MDM)" asked as the E/M documentation concept → Coding & administrative.
+Software/EHR how-to → Documentation & workflow, never Procedural guidance.
+2. clinical_domain — owning NYULH clinical department
+Assign the NYULH clinical department that would ordinarily own management of the problem in the query. Judge only the question's clinical content. Work down the precedence ladder and stop at the first step that applies.
+Mental and behavioural health → Psychiatry; if the patient or population is under 18 → Child and Adolescent Psychiatry.
+Organic brain, spinal cord, and nerve disease — stroke, epilepsy, MS, neuropathy, movement disorders, dementia and other neurodegeneration → Neurology (any age; child neurology sits in Neurology).
+Pregnancy, postpartum, lactation, fertility, or gynecologic conditions (including urogynecology) → Obstetrics and Gynecology.
+Patients under 18 with any other non-operative problem → Pediatrics.
+Operative or procedural surgical content — technique, operative planning, operative candidacy, immediate post-operative surgical care — goes to the operating department, regardless of age:
+heart, lung, or esophageal operations → Cardiothoracic Surgery
+cranial and spinal operations → Neurosurgery
+bone, joint, and other musculoskeletal operations, including bony trauma and joint replacement → Orthopedic Surgery
+kidney, ureter, bladder, prostate, and male genital operations, including stone procedures → Urology
+reconstruction, flaps, complex wounds, cosmetic procedures → Plastic Surgery
+ear, nose, throat, and head-and-neck operations → Otolaryngology-Head and Neck Surgery
+eye operations → Ophthalmology
+all other operative care (general, acute care/trauma, colorectal, bariatric, endocrine, hepatobiliary/pancreatic, vascular, surgical oncology, pediatric surgery) → Surgery
+Perioperative and pain content — preoperative risk assessment and optimisation, periprocedural medication management (including holding/bridging anticoagulants), anesthesia, airway, procedural sedation, acute and chronic pain → Anesthesiology, Perioperative Care, and Pain Medicine.
+ED processes — triage, undifferentiated acute presentations, trauma and resuscitation as a process, and minor bedside wound care and laceration repair → Emergency Medicine. A named condition goes to its home department even when acute (STEMI → Medicine).
+The diagnostic service itself — choosing, protocoling, performing, or reading an imaging study as such, contrast safety, interventional radiology procedures → Radiology; test methodology, specimen handling, transfusion medicine, histopathological interpretation as such → Pathology. What a result means for managing the condition → the managing department, not Radiology/Pathology.
+Radiotherapy — indications, planning, toxicity → Radiation Oncology. Systemic cancer therapy and malignant haematology → Medicine.
+Organ-defined non-operative territory:
+skin conditions → Dermatology
+medical eye disease → Ophthalmology
+distinctive ENT territory (hearing loss, sinonasal disease, laryngeal lesions) → Otolaryngology-Head and Neck Surgery
+structural, obstructive, and oncologic urinary-tract or male genital disease (kidney stones, BPH, haematuria work-up, prostate care, erectile dysfunction) → Urology; urinary-tract infections and pyelonephritis → Medicine
+non-operative musculoskeletal injury, fracture care, and sports medicine → Orthopedic Surgery; inflammatory joint disease → Medicine
+functional recovery, disability, spasticity, prosthetics/orthotics, the rehabilitation course → Rehabilitation Medicine
+All other adult, non-operative medical care → Medicine — cardiology; pulmonary and critical care, including ICU organ support (ventilation, vasopressors); gastroenterology and hepatology; infectious disease; nephrology and electrolytes; endocrinology; rheumatology; haematology/oncology; allergy; geriatrics and palliative care; primary and hospital medicine. This bucket is intentionally broad; when clinical_domain = Medicine, also complete medicine_division (2b).
+Population-level content — epidemiology, screening policy, public health, quality improvement, health services research, medical ethics → Population Health. Preventive care for an individual patient → Medicine.
+Basic-science mechanism — molecular or biochemical mechanism with no patient-management framing → Biochemistry and Molecular Pharmacology. Never use this value for clinical drug questions: dosing, interactions, selection, and safety go to the department owning the treated condition.
+Medicolegal — death certification, autopsy for legal purposes, forensic evaluations → Forensic Medicine.
+Other — nothing fits: content outside the listed departments (e.g., dentistry, podiatry) and queries with no clinical subject at all (EHR mechanics, generic dot-phrase or workflow questions).
+Additional rules:
+Documentation and coding tasks take the domain of their clinical subject whenever one exists ("ICD-10 codes for central retinal vein occlusion" → Ophthalmology; a note about pre-procedure fasting → Anesthesiology, Perioperative Care, and Pain Medicine); Other only when there is no clinical subject.
+Medication questions take the department that owns the treated condition (diltiazem for AF → Medicine; oxybutynin for overactive bladder → Urology; nifedipine for preterm labour → Obstetrics and Gynecology; rocuronium dosing → Anesthesiology, Perioperative Care, and Pain Medicine; psychotropics → Psychiatry or Child and Adolescent Psychiatry per step 1). When the indication is unstated and the medication has one clearly dominant clinical use, use that indication's owner ("adjust supratherapeutic phenytoin" → Neurology, as an antiepileptic). When the medication has multiple common indications spanning services or Medicine divisions and none is stated, do not infer an indication from its possible uses: assign Medicine → General Internal Medicine and Clinical Innovation. Biochemistry and Molecular Pharmacology is never a fallback for an ambiguous clinical medication query; reserve it for basic-science mechanism questions. Independently, mark ctx_patient = 1 only when the requested answer materially depends on the missing indication or other missing patient characteristics. The organ of a side effect never sets the domain ("Can Breztri cause urinary retention?" → Medicine, not Urology).
+Population steps (1, 3, 4) require the query itself to indicate the population — a patient, an age, or explicit paediatric/pregnancy framing. A disease's typical demographics alone do not fire them ("recurrence rate of Ewing sarcoma", no patient stated → Medicine).
+When a query spans an operative and a medical question, code the step that fires first on the ladder.
+2b. medicine_division — Department of Medicine division (conditional)
+Completed only when clinical_domain = Medicine; for every other domain, record Not applicable. Assign the Department of Medicine division that would own the problem:
+Cardiology — heart and vascular medical care, including anticoagulation for cardiac indications.
+Pulmonary, Critical Care, and Sleep Medicine — respiratory disease, ICU organ support (ventilation, vasopressors, ICU sedation), sleep disorders.
+Gastroenterology and Hepatology — GI and liver disease, including endoscopy.
+Infectious Diseases and Immunology — infections and antimicrobial therapy, allergy and immunology.
+Nephrology — kidney disease, dialysis, electrolytes and acid–base.
+Endocrinology, Diabetes, and Metabolism — diabetes, thyroid and other endocrine disease, obesity, metabolic bone disease.
+Rheumatology — inflammatory joint and connective-tissue disease.
+Hematology and Medical Oncology — benign and malignant haematology, venous thromboembolism, systemic cancer therapy.
+Geriatric Medicine and Palliative Care — geriatric syndromes, palliative and end-of-life care.
+Hospital Medicine — inpatient care processes and logistics (admission and discharge criteria, inpatient workflow) not owned by a subspecialty.
+General Internal Medicine and Clinical Innovation — primary care, individual preventive care, multimorbidity, and any Medicine query no subspecialty clearly owns (the default).
+Environmental Medicine — occupational and environmental exposures.
+Precision Medicine — genomic and molecular-profile-driven care.
+Medical Humanities — narrative, humanistic, and history-of-medicine content (rare).
+Not applicable — clinical_domain is anything other than Medicine.
+[medicine_division is optional instrumentation to restore subspecialty resolution inside the Medicine bucket; delete this field and its consistency rule if department-level resolution suffices.]
+3. question_intent — what the asker wants out of the answer
+task_category is the task; question_intent is the motive behind it. A drug-information question may be asked to verify something already believed, to look up a fact, or to decide what to do next — different intents on the same task.
+Verification — checking something already believed, planned, or heard, where the answer sought is essentially yes/no confirmation. Requires an explicit confirmation cue: "just to confirm", "is it true that", "am I right that", "can you give X with Y?" (asking permissibility). If the query asks for the correct value or choice itself rather than yes/no, code by the content sought instead. A bare yes/no question is Verification when it checks the permissibility or adequacy of a contemplated clinical action ("can I give ibuprofen with warfarin?"); a yes/no question about a general fact with no implied action ("can adults get RSV?") is coded by the content sought.
+Fact/property lookup — retrieve a discrete fact or attribute of something ("half-life of apixaban", "cutoff for severe hypercalcaemia", "is drug X on the market in the US"). Indication questions are attribute look-ups ("What is colchicine used for?", "Why would a patient need hydralazine?").
+Clinical decision — wants a recommendation or choice for a real or planned clinical action: "should I...", "what would you do", "which agent for this patient". Patient-anchored which-is-better questions belong here. The action must be anchored to a particular real or planned situation; a condition-level treatment query with no patient anchor ("management of otitis media") is Fact/property lookup.
+Documentation drafting — wants text produced (almost always paired with requests_text_generation = 1).
+Definition/concept — the meaning or content of a term, entity, classification, or criteria set ("what is HRS-AKI?", "what are the SIRS criteria?"). "What is X / what does X mean" → Definition/concept, even when X is an abbreviation or the query embeds patient context; "what is the [attribute] of X" → Fact/property lookup.
+Dosing/conversion — the answer is a dose, dose adjustment, dilution, rate, or unit conversion — including simple standard-dose lookups and administration rates and infusion durations ("over how many hours should IV magnesium run?"). Dose-answer questions are always Dosing/conversion, outranking Fact/property lookup and Procedure/how-to.
+Procedure/how-to — the steps to accomplish something, clinical or software.
+Comparison — how two or more options differ in general, not anchored to choosing for a specific patient.
+Mechanism/rationale — why or how something works, or why a practice is recommended ("mechanism of droxidopa", "why transition an insulin drip with Lantus?"). What a drug is for is Fact/property lookup, not Mechanism.
+Coding — obtain or verify billing/diagnosis codes and rules.
+Result interpretation — the meaning of a supplied result.
+Other — none of the above fits. Use sparingly.
+Tie-breaks: an explicit yes/no confirmation cue makes Verification outrank all others; otherwise dose answers are always Dosing/conversion; patient-anchored choices are Clinical decision while general contrasts are Comparison. A supplied result plus a yes/no confirmation ("does this echo mean tamponade?") is Verification, not Result interpretation.
+4. ama_category — AMA physician AI use-case
+Maps the query onto the AMA's physician AI use-case list. Classify by the primary deliverable; when a drafting request embeds another function ("draft a note including the likely diagnosis"), the drafting bucket wins.
+Summaries of medical research and standards of care — any request for medical knowledge: evidence or literature summaries, guideline content, standards of care, drug information, and focused factual clinical look-ups. This is the default bucket for clinical knowledge Q&A, not only long-form "summaries". General diagnostic knowledge with no case attached ("diagnostic criteria for lupus") belongs here, not in Assistive diagnosis.
+Creation of discharge instructions, care plans or progress notes — drafting clinical care documents: discharge instructions and summaries, care/treatment plans, and clinical notes of any kind (progress, visit, H&P, procedure notes) when the purpose is clinical documentation rather than billing.
+Documentation of billing codes, medical charts or visit notes — billing and administrative documentation: selecting or documenting ICD/CPT/E&M codes, charge capture, chart completion or audit for coding/compliance. Any query whose purpose is billing or coding belongs here, even when it involves note text.
+Generation of chart summaries — condensing an existing patient record: summarising pasted or referenced chart material, handoff/transfer summaries, problem-list distillation. Summarising literature is the first category; summarising a patient's record is this one.
+Generation of draft responses to patient portal messages — drafting replies to patient-initiated messages (portal, email, text).
+Translation services — converting content between human languages, in either direction. Rewording into lay English without a language change is not translation.
+Assistive diagnosis — support in identifying what a patient has, anchored to case findings: differentials, most likely diagnosis, and interpretation of supplied results or findings toward a diagnosis.
+None of the above — none of the seven applies (e.g., EHR/software how-to, scheduling or administrative questions without coding, pure unit conversion, procedural technique). Reserve it for queries matching no listed use case at all: treatment, management, and drug questions answered from standards of care belong in Summaries of medical research and standards of care. [This value was added because the seven AMA items are not exhaustive; remove it only if you are prepared to force-fit every query.]
+Boundary examples: "Write discharge instructions in Russian" → Creation of discharge instructions... (the deliverable is the instructions; the language is incidental). "Translate these existing instructions into Russian" → Translation services. "What E&M level does this visit support?" → Documentation of billing codes... . "Summarise this admission for sign-out" → Generation of chart summaries. Patient-specific treatment, management, and referral decisions ("Who should I refer her to?") → Summaries of medical research and standards of care — the AMA list has no treatment-decision bucket and these are answered from standards of care; Assistive diagnosis stays reserved for diagnosis-anchored support. Patient-facing educational handouts and tip sheets → Creation of discharge instructions, care plans or progress notes; explanation content for a patient without a drafted document ("explain this to my patient") → None of the above.
+5. patient_specific
+1 if the query concerns a particular individual patient case presented as real: clinical details of one person (age, sex, findings), "my patient", "this 68-year-old", or pasted chart material. 0 for population classes ("in patients with CKD..."), general questions, and explicitly hypothetical vignettes ("suppose a patient had...").
+6. actionable
+1 if the answer could directly change what the clinician does or documents in the near term — an order, prescription, plan, communication, note, or code. Verifying a planned action counts. 0 when the framing is purely educational or background with no live task apparent (mechanism questions, exam-style knowledge).
+7. evidence_dependent
+1 if a safe answer rests on the published evidence base — studies, guidelines, drug references, standards of care — such that misremembering that base could produce a materially wrong answer. 0 when the answer is pure logic or arithmetic, formatting or drafting mechanics, a stable definition, or depends only on institutional rules. Judge where the answer lives, not whether the rater would look it up: drug properties, antimicrobial spectra, device parameters, and guideline-derived thresholds are 1 even when a competent clinician knows them from memory (needing to consult sources is ctx_evidence, a separate judgement).
+8–11. ctx_patient, ctx_institutional, ctx_evidence, needs_context
+Judge the three specific fields first, then set needs_context = 1 iff any of them is 1.
+ctx_patient — a safe answer requires patient-level information not present in the query (history, medication list, allergies, labs, weight, renal function). If the query already contains everything needed, 0 — even for a patient-specific case.
+ctx_institutional — a safe answer requires local knowledge: institutional protocols or order sets, formulary and restriction status, local antibiograms, payer/billing rules, EHR configuration.
+ctx_evidence — a safe answer requires consulting current published sources rather than relying on remembered knowledge: guideline-sensitive or fast-moving topics, safety-critical dosing precision, recently changed recommendations, new agents. Stable textbook content well within general clinical knowledge → 0 (evidence_dependent may still be 1).
+12. risk — potential harm if answered incorrectly
+Rate the stakes of the question, assuming the clinician might act on a wrong answer without independent verification. Rate the question's potential for harm, not the likelihood that the assistant errs. Purely non-clinical harms (financial, legal, privacy) cap at Moderate.
+Minimal — a wrong answer cannot plausibly affect patient welfare or material interests (definitions for learning, formatting, trivia).
+Low — minor inefficiency, inconvenience, or easily caught and reversible issues; patient harm implausible.
+Moderate — could cause temporary or reversible harm, suboptimal treatment, or correctable delays in care; typical billing or documentation errors.
+High — could cause serious harm: hospitalisation, significant or lasting injury, major treatment failure (e.g., wrong adult dosing of higher-risk drugs, a missed significant contraindication or red flag).
+Critical — plausibly death or catastrophic irreversible harm: high-alert medications (insulin, anticoagulants, opioids, chemotherapy), paediatric weight-based dosing, time-critical emergencies, teratogenic exposure in pregnancy.
+13. answerability — as asked
+Judge the query as posed, given only its text and general clinical knowledge. Independent of route.
+High — can be answered well and completely as asked.
+Partial — a useful answer is possible but with material gaps, assumptions, or necessary conditioning ("if X, then...; if Y, then...").
+Low — cannot be meaningfully or safely answered as posed: too vague, dependent on unavailable information, or unsafe to attempt.
+14. route — safest deployment route
+Choose the least restrictive route that is still safe, in the order Direct < Retrieval < Clarification < Escalation < Abstention; select the first barrier that applies. When more than one ctx_ flag is set, Clarification outranks Retrieval: if ctx_patient = 1 together with ctx_evidence or ctx_institutional, retrieval cannot make an under-specified case safe, so the route is Clarification. Retrieval applies only when the question is fully specified and sourcing is the sole barrier.
+Direct — answer from general knowledge; no ctx_ flag set and the risk is tolerable for an unaided answer.
+Retrieval — answer, but grounded in retrieved authoritative sources (current literature/guidelines or institutional documents). Typical when ctx_evidence = 1 or ctx_institutional = 1 and the question is otherwise well posed.
+Clarification — missing details the asker could supply are the main barrier: typically ctx_patient = 1 with an under-specified case, or an ambiguous question.
+Escalation — the decision should go to a qualified human (specialist, pharmacy, poison control, ethics) even with retrieval and clarification, because it requires individualized judgement beyond any assistant pathway. High stakes alone do not force Escalation when the answer is clear-cut.
+Abstention — decline entirely: out of scope or unsafe under every route.
+15–21. Surface flags — literal text only
+Judged on the query text alone, independently of every field above. If the cue is not in the text, the value is 0.
+mentions_medication — 1 if a specific medication, biological, or vaccine is named, generic or brand. Blood products and other administered biologicals (pRBCs, albumin) count. A drug class alone ("statins", "antibiotics", "a beta-blocker") is 0.
+mentions_dose — 1 if a numeric dose, strength, concentration, or rate appears ("5 mg", "1 g q8h", "0.9%", "10 mL/h"). A frequency or route alone ("BID", "PO") is 0.
+mentions_lab_or_result — 1 if a laboratory or test result is referenced, numeric ("K 5.8") or qualitative ("MRSA on the swab", "troponin elevated"). Naming a test only to ask whether or how to order it is 0, and bedside vital signs alone (HR, BP, RR, temperature, SpO2) are 0.
+mentions_imaging — 1 for any reference to an imaging study or report (X-ray, CT, MRI, ultrasound, echo, nuclear), including whether to order one. [Deliberate asymmetry with the lab flag, following the field definitions: labs count only as results; imaging counts on any reference.]
+vulnerable_population — 1 if the text concerns neonates or children (under 18), pregnancy or lactation, geriatric patients (a stated age of 65 or older, or described as elderly/geriatric/frail), or another group of comparable vulnerability explicitly indicated (e.g., severely cognitively impaired).
+acute_or_urgent — 1 only when the text describes a current or imminent time-critical situation ("actively seizing", "in the ED now", "BP 70/40"). General knowledge questions about acute conditions ("first-line for anaphylaxis?") are 0.
+requests_text_generation — 1 when the requested output is a written artifact to be used: a note, letter, instructions, portal reply, summary of supplied text, or translation. 0 when the requested output is an answer or explanation, however long.
+22. query_form
+Question — interrogative in function (word order or "?"), including permissibility questions. "Can you give drug X with Y?" means "is it permissible" and is a Question, because it is not a request addressed to the assistant.
+Command — an imperative request addressed to the assistant, including polite interrogative phrasing: "Can you write...", "Could you summarise...", "Please list...".
+Fragment — a keyword, phrase, or pasted text that is neither ("apixaban CrCl 28", a pasted lab panel).
+If a query mixes forms, classify the sentence carrying the main request; if a central request to the assistant is imperative, Command wins. Classify by function, not punctuation: a question missing its "?" is still a Question.
+23. uses_abbreviation
+1 if the query text contains clinical abbreviations, acronyms, or shorthand, however common (CrCl, PO, IV, STEMI, s/p, BID, CBC, CT, HIV, "g tube"). Units of measure alone (mg, mL, kg) do not count; brand names are not abbreviations; non-clinical abbreviations (ASAP, FYI) do not count.
+
+Output format
+All 24 keys must be present with values copied exactly from the lists below. Key order does not affect validity; the order below is the recommended recording order for human raters.
+task_category:            Drug information & pharmacotherapy | Treatment & management | Foundational knowledge | Patient education & communication | Test & result interpretation | Documentation & workflow | Diagnosis & differential | Coding & administrative | Procedural guidance | Other
+clinical_domain:          Anesthesiology, Perioperative Care, and Pain Medicine | Biochemistry and Molecular Pharmacology | Cardiothoracic Surgery | Child and Adolescent Psychiatry | Dermatology | Emergency Medicine | Forensic Medicine | Medicine | Neurology | Neurosurgery | Obstetrics and Gynecology | Ophthalmology | Orthopedic Surgery | Otolaryngology-Head and Neck Surgery | Pathology | Pediatrics | Plastic Surgery | Population Health | Psychiatry | Radiation Oncology | Radiology | Rehabilitation Medicine | Surgery | Urology | Other
+medicine_division:        Cardiology | Endocrinology, Diabetes, and Metabolism | Environmental Medicine | Gastroenterology and Hepatology | General Internal Medicine and Clinical Innovation | Geriatric Medicine and Palliative Care | Hematology and Medical Oncology | Hospital Medicine | Infectious Diseases and Immunology | Medical Humanities | Nephrology | Precision Medicine | Pulmonary, Critical Care, and Sleep Medicine | Rheumatology | Not applicable
+question_intent:          Verification | Fact/property lookup | Clinical decision | Documentation drafting | Definition/concept | Dosing/conversion | Procedure/how-to | Comparison | Mechanism/rationale | Coding | Result interpretation | Other
+ama_category:             Summaries of medical research and standards of care | Creation of discharge instructions, care plans or progress notes | Documentation of billing codes, medical charts or visit notes | Generation of chart summaries | Generation of draft responses to patient portal messages | Translation services | Assistive diagnosis | None of the above
+patient_specific:         0 | 1
+actionable:               0 | 1
+evidence_dependent:       0 | 1
+ctx_patient:              0 | 1
+ctx_institutional:        0 | 1
+ctx_evidence:             0 | 1
+needs_context:            0 | 1   (must equal OR of the three ctx_ fields)
+risk:                     Minimal | Low | Moderate | High | Critical
+answerability:            High | Partial | Low
+route:                    Direct | Retrieval | Clarification | Escalation | Abstention
+mentions_medication:      0 | 1
+mentions_dose:            0 | 1
+mentions_lab_or_result:   0 | 1
+mentions_imaging:         0 | 1
+vulnerable_population:    0 | 1
+acute_or_urgent:          0 | 1
+requests_text_generation: 0 | 1
+query_form:               Question | Command | Fragment
+uses_abbreviation:        0 | 1
+
+
+Worked examples
+Example 1
+Question:  68M with AF, CrCl 28 (Cr 2.1), weight 60 kg — he's written for apixaban 5 mg BID. What's the right dose?
+
+{"task_category": "Drug information & pharmacotherapy", "clinical_domain": "Medicine", "medicine_division": "Cardiology", "question_intent": "Dosing/conversion", "ama_category": "Summaries of medical research and standards of care", "patient_specific": 1, "actionable": 1, "evidence_dependent": 1, "ctx_patient": 0, "ctx_institutional": 0, "ctx_evidence": 1, "needs_context": 1, "risk": "Critical", "answerability": "High", "route": "Retrieval", "mentions_medication": 1, "mentions_dose": 1, "mentions_lab_or_result": 1, "mentions_imaging": 0, "vulnerable_population": 1, "acute_or_urgent": 0, "requests_text_generation": 0, "query_form": "Question", "uses_abbreviation": 1}
+
+Rule applications worth noting: the domain is the department owning the treated condition — adult AF anticoagulation is non-operative medical care (ladder step 11) → Medicine, with medicine_division = Cardiology (anticoagulation for a cardiac indication). The case is patient-specific, yet ctx_patient = 0 because age, weight, and creatinine — everything the dose-reduction criteria need — are already supplied; ctx_evidence = 1 (safety-critical dosing worth verifying against current labelling) drives needs_context = 1 and route = Retrieval. Risk is Critical (anticoagulant, high-alert class). vulnerable_population = 1 because a stated age of 65+ appears in the text; requests_text_generation = 0 because an answer, not an artifact, is requested.
+Example 2
+Question:  Please write discharge instructions in Russian for a 4-year-old going home after viral gastroenteritis — include warning signs that should prompt a return visit.
+
+{"task_category": "Documentation & workflow", "clinical_domain": "Pediatrics", "medicine_division": "Not applicable", "question_intent": "Documentation drafting", "ama_category": "Creation of discharge instructions, care plans or progress notes", "patient_specific": 1, "actionable": 1, "evidence_dependent": 1, "ctx_patient": 0, "ctx_institutional": 0, "ctx_evidence": 0, "needs_context": 0, "risk": "Moderate", "answerability": "High", "route": "Direct", "mentions_medication": 0, "mentions_dose": 0, "mentions_lab_or_result": 0, "mentions_imaging": 0, "vulnerable_population": 1, "acute_or_urgent": 0, "requests_text_generation": 1, "query_form": "Command", "uses_abbreviation": 0}
+
+Rule applications worth noting: drafting beats topic (task is Documentation & workflow, not Patient education); the under-18 patient with a non-psychiatric, non-operative problem fires ladder step 4 → Pediatrics, so medicine_division = Not applicable; the AMA category follows the primary deliverable (discharge instructions), with the Russian language incidental rather than Translation services. evidence_dependent = 1 (the warning signs rest on standard-of-care content) while ctx_evidence = 0 (stable, well-known content), so needs_context = 0 and the route is Direct. Risk is Moderate: the plausible harm pathway is a correctable delay in re-presentation, with no high-alert therapy involved. "Please write..." is a Command.

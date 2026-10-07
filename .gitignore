@@ -1,0 +1,26 @@
+# secrets
+.env
+.env.*
+!.env.example
+# query data never belongs in this repository
+*.csv
+!examples/queries.csv
+!validation/clinician_annotation_template.csv
+!platform/examples/demo_annotation_queries.csv
+*.jsonl
+!examples/labels.jsonl
+*.manifest.json
+*.import.json
+*.lock
+# python
+__pycache__/
+*.egg-info/
+.venv/
+build/
+dist/
+.pytest_cache/
+# platform
+platform/node_modules/
+platform/.next/
+platform/data/
+.DS_Store

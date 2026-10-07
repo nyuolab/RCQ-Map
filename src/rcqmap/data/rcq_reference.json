@@ -1,0 +1,48 @@
+{
+ "source": "127,625 annotated real clinical queries from the paper (first clinician turn of each conversation, GPT-5.6 sol annotator, reasoning effort none)",
+ "n": 127625,
+ "kind_of_work": {
+  "Documentation & administration": 0.36158,
+  "Knowledge retrieval": 0.28921,
+  "Clinical reasoning": 0.14295,
+  "Other": 0.20626
+ },
+ "task_category": {
+  "Documentation & workflow": 0.35108,
+  "Coding & administrative": 0.0105,
+  "Foundational knowledge": 0.14786,
+  "Drug information & pharmacotherapy": 0.14135,
+  "Treatment & management": 0.06185,
+  "Diagnosis & differential": 0.03692,
+  "Test & result interpretation": 0.02659,
+  "Procedural guidance": 0.00546,
+  "Patient education & communication": 0.01212,
+  "Other": 0.20626
+ },
+ "intent_group": {
+  "Decide or verify": 0.13423,
+  "Look up or understand": 0.31965,
+  "Draft text or code": 0.39536,
+  "Follow a procedure": 0.03505,
+  "Other": 0.11571
+ },
+ "risk": {
+  "Minimal": 0.23154,
+  "Low": 0.29482,
+  "Moderate": 0.34162,
+  "High": 0.11558,
+  "Critical": 0.01644
+ },
+ "route": {
+  "Direct": 0.61152,
+  "Retrieval": 0.11995,
+  "Clarification": 0.26789,
+  "Escalation": 0.00025,
+  "Abstention": 0.00039
+ },
+ "patient_specific": 0.36498,
+ "ctx_local": 0.22188,
+ "high_or_critical": 0.13202,
+ "answer_not_high": 0.36079,
+ "not_direct": 0.38848
+}

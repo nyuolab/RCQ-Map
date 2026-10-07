@@ -1,0 +1,24 @@
+{
+  "name": "rcq-map-annotation-platform",
+  "version": "1.0.0",
+  "description": "Clinician-facing platform for blinded RCQ-Map annotation and agreement monitoring.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/build-benchmark.mjs && next dev",
+    "build": "node scripts/build-benchmark.mjs && next build",
+    "start": "next start",
+    "test": "node --test tests/*.test.mjs",
+    "check": "npm test && npm run build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@vercel/blob": "^2.8.0",
+    "next": "^16.3.1",
+    "postgres": "^3.4.8",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  }
+}

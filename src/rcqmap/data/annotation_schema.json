@@ -1,0 +1,140 @@
+{
+  "schema_version": "1.0",
+  "fields": [
+    {
+      "key": "task_category",
+      "type": "string",
+      "allowed": [
+        "Drug information & pharmacotherapy",
+        "Treatment & management",
+        "Foundational knowledge",
+        "Patient education & communication",
+        "Test & result interpretation",
+        "Documentation & workflow",
+        "Diagnosis & differential",
+        "Coding & administrative",
+        "Procedural guidance",
+        "Other"
+      ]
+    },
+    {
+      "key": "clinical_domain",
+      "type": "string",
+      "allowed": [
+        "Anesthesiology, Perioperative Care, and Pain Medicine",
+        "Biochemistry and Molecular Pharmacology",
+        "Cardiothoracic Surgery",
+        "Child and Adolescent Psychiatry",
+        "Dermatology",
+        "Emergency Medicine",
+        "Forensic Medicine",
+        "Medicine",
+        "Neurology",
+        "Neurosurgery",
+        "Obstetrics and Gynecology",
+        "Ophthalmology",
+        "Orthopedic Surgery",
+        "Otolaryngology-Head and Neck Surgery",
+        "Pathology",
+        "Pediatrics",
+        "Plastic Surgery",
+        "Population Health",
+        "Psychiatry",
+        "Radiation Oncology",
+        "Radiology",
+        "Rehabilitation Medicine",
+        "Surgery",
+        "Urology",
+        "Other"
+      ]
+    },
+    {
+      "key": "medicine_division",
+      "type": "string",
+      "allowed": [
+        "Cardiology",
+        "Endocrinology, Diabetes, and Metabolism",
+        "Environmental Medicine",
+        "Gastroenterology and Hepatology",
+        "General Internal Medicine and Clinical Innovation",
+        "Geriatric Medicine and Palliative Care",
+        "Hematology and Medical Oncology",
+        "Hospital Medicine",
+        "Infectious Diseases and Immunology",
+        "Medical Humanities",
+        "Nephrology",
+        "Precision Medicine",
+        "Pulmonary, Critical Care, and Sleep Medicine",
+        "Rheumatology",
+        "Not applicable"
+      ]
+    },
+    {
+      "key": "question_intent",
+      "type": "string",
+      "allowed": [
+        "Verification",
+        "Fact/property lookup",
+        "Clinical decision",
+        "Documentation drafting",
+        "Definition/concept",
+        "Dosing/conversion",
+        "Procedure/how-to",
+        "Comparison",
+        "Mechanism/rationale",
+        "Coding",
+        "Result interpretation",
+        "Other"
+      ]
+    },
+    {
+      "key": "ama_category",
+      "type": "string",
+      "allowed": [
+        "Summaries of medical research and standards of care",
+        "Creation of discharge instructions, care plans or progress notes",
+        "Documentation of billing codes, medical charts or visit notes",
+        "Generation of chart summaries",
+        "Generation of draft responses to patient portal messages",
+        "Translation services",
+        "Assistive diagnosis",
+        "None of the above"
+      ]
+    },
+    { "key": "patient_specific", "type": "integer", "allowed": [0, 1] },
+    { "key": "actionable", "type": "integer", "allowed": [0, 1] },
+    { "key": "evidence_dependent", "type": "integer", "allowed": [0, 1] },
+    { "key": "ctx_patient", "type": "integer", "allowed": [0, 1] },
+    { "key": "ctx_institutional", "type": "integer", "allowed": [0, 1] },
+    { "key": "ctx_evidence", "type": "integer", "allowed": [0, 1] },
+    { "key": "needs_context", "type": "integer", "allowed": [0, 1] },
+    {
+      "key": "risk",
+      "type": "string",
+      "allowed": ["Minimal", "Low", "Moderate", "High", "Critical"]
+    },
+    {
+      "key": "answerability",
+      "type": "string",
+      "allowed": ["High", "Partial", "Low"]
+    },
+    {
+      "key": "route",
+      "type": "string",
+      "allowed": ["Direct", "Retrieval", "Clarification", "Escalation", "Abstention"]
+    },
+    { "key": "mentions_medication", "type": "integer", "allowed": [0, 1] },
+    { "key": "mentions_dose", "type": "integer", "allowed": [0, 1] },
+    { "key": "mentions_lab_or_result", "type": "integer", "allowed": [0, 1] },
+    { "key": "mentions_imaging", "type": "integer", "allowed": [0, 1] },
+    { "key": "vulnerable_population", "type": "integer", "allowed": [0, 1] },
+    { "key": "acute_or_urgent", "type": "integer", "allowed": [0, 1] },
+    { "key": "requests_text_generation", "type": "integer", "allowed": [0, 1] },
+    {
+      "key": "query_form",
+      "type": "string",
+      "allowed": ["Question", "Command", "Fragment"]
+    },
+    { "key": "uses_abbreviation", "type": "integer", "allowed": [0, 1] }
+  ]
+}
